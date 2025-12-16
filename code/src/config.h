@@ -1,8 +1,8 @@
 #ifndef config_h
 #define config_h
 
-#define SSID        "Kame32"
-#define PASSWORD    "00000000"
+#define SSID        "HONOR"
+#define PASSWORD    "chu107610."
 #define HOSTNAME    "kame32"
 #define LED_PIN     2
 

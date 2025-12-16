@@ -139,7 +139,7 @@ void handleLoad(){
 void handleSave(){
     if (NVS.begin()){
         for (int i = 0; i < 8; i++){
-            NVS.setInt("servo" + String(i), calibration[i]);
+            NVS.setInt("servo" + String(i), (int16_t)calibration[i]);
             updateServo(i);
         }
     }
@@ -167,10 +167,19 @@ void handleDecrease(){
 void setup() {
     Serial.begin(115200);
 
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(SSID, PASSWORD);
-    //WiFi.mode(WIFI_STA);
-    //WiFi.begin(SSID, PASSWORD);
+    // WiFi.mode(WIFI_AP);
+    // WiFi.softAP(SSID, PASSWORD);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASSWORD);
+    Serial.println("Connecting to WiFi...");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("WiFi connected.");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
     MDNS.begin(HOSTNAME);
 
     robot.init();
