@@ -182,8 +182,13 @@ void setup() {
     Serial.println(WiFi.localIP());
     MDNS.begin(HOSTNAME);
 
-    robot.init();
+    robot.init(false);  // 不加载已保存的校准值
     robot.setCalibration(calibration);
+    
+    // 将所有舵机初始化到90度中心位置
+    for (int i = 0; i < 8; i++) {
+        robot.setServo(i, 90);
+    }
 
     server.on("/", handleRoot);
     server.on("/increase", handleIncrease);

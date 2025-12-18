@@ -3,18 +3,20 @@
 
 #include <Octosnake.h>
 #include <ArduinoNvs.h>
+#include <ESP32Servo.h>
 
-#define SERVO_0_PIN         1
-#define SERVO_1_PIN         2
-#define SERVO_2_PIN         3
-#define SERVO_3_PIN         4
-#define SERVO_4_PIN         5
-#define SERVO_5_PIN         6
-#define SERVO_6_PIN         7
-#define SERVO_7_PIN         13
+#define SERVO_0_PIN         6
+#define SERVO_1_PIN         4
+#define SERVO_2_PIN         5
+#define SERVO_3_PIN         3
+#define SERVO_4_PIN         7
+#define SERVO_5_PIN         13
+#define SERVO_6_PIN         1
+#define SERVO_7_PIN         2
 
-#define MIN_PWM_DUTY        1638
-#define MAX_PWM_DUTY        8191
+#define SERVO_MIN_US        500
+#define SERVO_MAX_US        2500
+#define SERVO_PWM_FREQ      50
 
 class Kame{
 public:
@@ -52,6 +54,7 @@ public:
 
 //private:
     Oscillator oscillator[8];
+    Servo _servos[8];
     int board_pins[8];
     int calibration[8];
     bool reverse[8];

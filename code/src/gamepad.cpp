@@ -72,10 +72,10 @@ void handleButton() {
 void setup() {
     Serial.begin(115200);
 
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(SSID, PASSWORD);
-    // WiFi.mode(WIFI_STA);
-    // WiFi.begin(SSID, PASSWORD);
+    // WiFi.mode(WIFI_AP);
+    // WiFi.softAP(SSID, PASSWORD);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASSWORD);
     MDNS.begin(HOSTNAME);
     
     robot.init();

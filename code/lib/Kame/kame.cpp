@@ -1,5 +1,22 @@
 #include "kame.h"
 #include <Arduino.h>
+
+namespace
+{
+    bool s_pwmTimersAllocated = false;
+
+    void ensurePwmTimers()
+    {
+        if (s_pwmTimersAllocated)
+            return;
+
+        ESP32PWM::allocateTimer(0);
+        ESP32PWM::allocateTimer(1);
+        ESP32PWM::allocateTimer(2);
+        ESP32PWM::allocateTimer(3);
+        s_pwmTimersAllocated = true;
+    }
+}
 Kame::Kame()
 {
     // Map between servos and board pins
@@ -21,6 +38,8 @@ Kame::Kame()
 
 void Kame::init(bool load_calibration)
 {
+    ensurePwmTimers();
+
     if (load_calibration)
     {
         loadCalibration();
@@ -34,12 +53,6 @@ void Kame::init(bool load_calibration)
     for (int i = 0; i < 8; i++)
     {
         oscillator[i].start();
-        // Attach pin to LEDC channel. Newer Arduino cores use `ledcAttach`.
-        // Setting duty is still done with `ledcWrite(channel, duty)`.
-        // 50Hz for servo, 16-bit resolution
-        // ledcSetup(i, 50, 14);
-        // ledcAttachPin(board_pins[i], i);
-        ledcAttach(board_pins[i], 50, 14); // 新 API
     }
 
     arm();
@@ -80,15 +93,35 @@ void Kame::saveCalibration(int new_calibration[8])
 
 void Kame::arm()
 {
+    if (_armed)
+        return;
+
+    ensurePwmTimers();
+
+    for (int i = 0; i < 8; i++)
+    {
+        if (!_servos[i].attached())
+        {
+            _servos[i].setPeriodHertz(SERVO_PWM_FREQ);
+            _servos[i].attach(board_pins[i], SERVO_MIN_US, SERVO_MAX_US);
+        }
+    }
+
     _armed = true;
 }
 
 void Kame::disarm()
 {
+    if (!_armed)
+        return;
+
     _armed = false;
     for (int i = 0; i < 8; i++)
     {
-        ledcWrite(i, 0);
+        if (_servos[i].attached())
+        {
+            _servos[i].detach();
+        }
         _servo_position[i] = -1.0;
     }
 }
@@ -106,15 +139,15 @@ void Kame::setServo(int id, float target)
     if (!_armed)
         return;
 
-    int duty;
     float value = target + calibration[id];
     value = constrain(value, 0.0, 180.0);
-    if (!reverse[id])
-        duty = value / 180.0 * (MAX_PWM_DUTY - MIN_PWM_DUTY) + MIN_PWM_DUTY;
-    else
-        duty = (180 - value) / 180.0 * (MAX_PWM_DUTY - MIN_PWM_DUTY) + MIN_PWM_DUTY;
+    if (reverse[id])
+        value = 180.0 - value;
 
-    ledcWrite(id, duty);
+    if (!_servos[id].attached())
+        return;
+
+    _servos[id].write(value);
     _servo_position[id] = target;
 }
 
